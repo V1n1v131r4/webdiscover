@@ -67,7 +67,7 @@ echo "=========================================================="
 			echo "### SearchSploit ##"
 			echo " "
 			echo " "
-			echo "==> Technology"
+			echo "==> Web Technology"
 
 			if cat /tmp/whatweb_temp.txt | grep -e "X\-Powered\-By\:";then TECH=`cat /tmp/whatweb_temp.txt | grep -e "X\-Powered\-By\:" | awk '{print $2}' | sed 's/-/ /g' | sed -E 's/\// /g' | sed 's/,//g' | awk '{print $1,$2}' | head -n1` && searchsploit -s $TECH;else echo "Can't understand technology...";fi
 			
@@ -81,7 +81,7 @@ echo "=========================================================="
 			# WordPress
 			rm -rf /tmp/2.txt
 
-			echo "==> CMS"
+			echo "==> CMS - WordPress"
 
 			if cat /tmp/whatweb_temp.txt 2>&1 > /dev/null | awk '/WordPress/';then cat /tmp/whatweb_temp.txt | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' > /tmp/2.txt;else echo "";fi
 
@@ -92,7 +92,7 @@ echo "=========================================================="
 			# Joomla
 			rm -rf /tmp/3.txt
 
-			echo "==> CMS"
+			echo "==> CMS - Joomla"
 
 			if cat /tmp/whatweb_temp.txt 2>&1 > /dev/null | awk '/Joomla/';then cat /tmp/whatweb_temp.txt | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' > /tmp/3.txt;else echo "";fi
 
@@ -101,10 +101,10 @@ echo "=========================================================="
 			#VER2=`cat /tmp/2.txt | awk -F "Joomla" '/Joomla\[/{print $2}' | sed 's/\[/ /g' | sed 's/\]/ /g' | sed 's/\,/ /g' | tr -s ' ' | cut -d ' ' -f 3` && searchsploit -s joomla $VER2
 			
 			# WPScan
-			#if whatweb --plugins=wordpress | grep "WordPress";then echo "Scanning Wordpress..." && echo " " && wpscan --url $target; else echo ""; fi
+			if whatweb --plugins=wordpress | grep "WordPress";then echo "Scanning Wordpress..." && echo " " && wpscan --url $target; else echo ""; fi
 
 			# JoomScan
-			#if whatweb --plugins=joomla | grep "Joomla";then echo "Scanning Joomla..." && echo " " && joomscan --url $target; else echo ""; fi
+			if whatweb --plugins=joomla | grep "Joomla";then echo "Scanning Joomla..." && echo " " && joomscan --url $target; else echo ""; fi
 
 			echo " "
 
