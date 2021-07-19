@@ -65,6 +65,7 @@ echo "=========================================================="
 
 			echo " "
 			echo "### SearchSploit ##"
+			# Tks to @Gr1nch for this insight ;)
 			echo " "
 			echo " "
 			echo "==> Web Technology"
