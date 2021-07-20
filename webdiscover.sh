@@ -43,8 +43,7 @@ echo "=========================================================="
 
 			echo "==> Set your target (Ex. google.com)" ; read target
 			echo " "
-			echo " "
-			echo "==> Set ports for your target" ; read ports
+			
 
 			#########################################################################
 			############################## Starting Scan ############################
@@ -52,6 +51,9 @@ echo "=========================================================="
 			echo " "
 			echo "Let's go!!!" 
 			echo " "
+
+			# Create directory
+			mkdir result
 			
 			# nmap
 			
@@ -59,28 +61,29 @@ echo "=========================================================="
 			echo " "
 
 			rm -rf /tmp/nmap.txt
-			nmap -sV -sC -O -p 80,443 $target -oX /tmp/nmap.txt
+			nmap -sV -sC -O -p 80,443 $target -oX result/nmap.xml
 
 
 			echo "### DNSRecon ###"
 			echo " "
 
-			dnsrecon -d $target -t axfr -s 2>/dev/null
+			dnsrecon -d $target -t axfr -s 2>/dev/null | tee result/dnsrecon_axfr.txt
 
-			dnsrecon -d $target -t zonewalk 2>/dev/null
+			dnsrecon -d $target -t zonewalk 2>/dev/null | tee result/dnsrecon_zonewal.txt
 
-			dnsrecon -d $target -D /usr/share/namelist.txt -r brt 2>/dev/null
+			dnsrecon -d $target -D /usr/share/namelist.txt -r brt 2>/dev/null | tee result/dnsrecon_subdomain.txt
 
 			echo " "	
 			echo "### WhatWeb ###"
 			echo " "
 
-			rm -rf /tmp/whatweb_temp.txt
-			whatweb --no-errors -a 3 -v $target | tee /tmp/whatweb_temp.txt
+			rm -rf result/whatweb.txt
+			whatweb --no-errors -a 3 -v $target | tee result/whatweb.txt
 
 			echo " "
 			echo "### SearchSploit ##"
 			echo " "
+			# Tks to @Gr1nch for this insight
 			
 			#echo " "
 			#echo "==> Searchsploit to NMAP"
@@ -89,13 +92,13 @@ echo "=========================================================="
 			#echo " "
 
 			echo " "
-			echo "==> Technology"
+			echo "==> Web Technology"
 
-			if cat /tmp/whatweb_temp.txt | grep -e "X\-Powered\-By\:";then TECH=`cat /tmp/whatweb_temp.txt | grep -e "X\-Powered\-By\:" | awk '{print $2}' | sed 's/-/ /g' | sed -E 's/\// /g' | sed 's/,//g' | awk '{print $1,$2}' | head -n1` && searchsploit -s $TECH;else echo "Can't understand technology...";fi
+			if cat result/whatweb.txt | grep -e "X\-Powered\-By\:";then TECH=`cat result/whatweb.txt | grep -e "X\-Powered\-By\:" | awk '{print $2}' | sed 's/-/ /g' | sed -E 's/\// /g' | sed 's/,//g' | awk '{print $1,$2}' | head -n1` && searchsploit -s $TECH | tee result/webtech_sploit.txt;else echo "Can't understand technology...";fi
 			
 			echo " "
 			echo "==> Web Server"
-			if ! cat /tmp/whatweb_temp.txt | grep -e "Server:" | awk '{print $2}' | sed 's/-/ /g' | sed -E 's/\// /g' | sed 's/,//g' | awk '{print $2}';then echo "Can't define server version...";else SRV=`cat /tmp/whatweb_temp.txt | grep -e "Server:" | awk '{print $2}' | sed 's/-/ /g' | sed -E 's/\// /g' | sed 's/,//g' | awk '{print $1,$2}' | head -n1` && searchsploit -s $SRV;fi
+			if ! cat result/whatweb.txt | grep -e "Server:" | awk '{print $2}' | sed 's/-/ /g' | sed -E 's/\// /g' | sed 's/,//g' | awk '{print $2}';then echo "Can't define server version...";else SRV=`cat result/whatweb.txt | grep -e "Server:" | awk '{print $2}' | sed 's/-/ /g' | sed -E 's/\// /g' | sed 's/,//g' | awk '{print $1,$2}' | head -n1` && searchsploit -s $SRV | tee result/webserver_sploit.txt;fi
 			
 			echo " "
 			## CMS
@@ -103,22 +106,22 @@ echo "=========================================================="
 			# WordPress
 			rm -rf /tmp/2.txt
 
-			echo "==> CMS"
+			echo "==> CMS - WordPress"
 
-			if cat /tmp/whatweb_temp.txt 2>&1 > /dev/null | awk '/WordPress/';then cat /tmp/whatweb_temp.txt | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' > /tmp/2.txt;else echo "";fi
+			if cat result/whatweb.txt 2>&1 > /dev/null | awk '/WordPress/';then cat result/whatweb.txt | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' > /tmp/2.txt;else echo "";fi
 
-			VER1=`cat /tmp/2.txt | grep -E -o "WordPress\[.*" | grep -E -o "([0-9]\.[0-9]\.[0-9])"` && searchsploit -s wordpress $VER1
+			VER1=`cat /tmp/2.txt | grep -E -o "WordPress\[.*" | grep -E -o "([0-9]\.[0-9]\.[0-9])"` && searchsploit -s wordpress $VER1 | tee result/wordpress_sploit.txt
 			
 			#VER2=`cat /tmp/2.txt | awk -F "WordPress" '/WordPress\[/{print $2}' | sed 's/\[/ /g' | sed 's/\]/ /g' | sed 's/\,/ /g' | tr -s ' ' | cut -d ' ' -f 3` && searchsploit -s wordpress $VER2
 			
 			# Joomla
 			rm -rf /tmp/3.txt
 
-			echo "==> CMS"
+			echo "==> CMS - Joomla"
 
-			if cat /tmp/whatweb_temp.txt 2>&1 > /dev/null | awk '/Joomla/';then cat /tmp/whatweb_temp.txt | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' > /tmp/3.txt;else echo "";fi
+			if cat result/whatweb.txt 2>&1 > /dev/null | awk '/Joomla/';then cat result/whatweb.txt | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' > /tmp/3.txt;else echo "";fi
 
-			VER1=`cat /tmp/3.txt | grep -E -o "Joomla\[.*" | grep -E -o "([0-9]\.[0-9]\.[0-9])"` && searchsploit -s joomla $VER1
+			VER1=`cat /tmp/3.txt | grep -E -o "Joomla\[.*" | grep -E -o "([0-9]\.[0-9]\.[0-9])"` && searchsploit -s joomla $VER1 | tee result/joomla_sploit.txt
 			
 			#VER2=`cat /tmp/2.txt | awk -F "Joomla" '/Joomla\[/{print $2}' | sed 's/\[/ /g' | sed 's/\]/ /g' | sed 's/\,/ /g' | tr -s ' ' | cut -d ' ' -f 3` && searchsploit -s joomla $VER2
 			
@@ -131,13 +134,13 @@ echo "=========================================================="
 			echo " "
 			echo "## GoSpider ##"
 			echo " "
-			gospider -s "https://www.$target" -c 10 -d 1
+			gospider -s "https://www.$target" -c 10 -d 1 | tee result/gospider.txt
 
 			echo " "	
 			echo "### FFUF ###"
 			echo " "
 
-			ffuf -c -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-big.txt -u http://$target/FUZZ -mc 200
+			ffuf -c -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-big.txt -u http://$target/FUZZ -mc 200 | tee result/ffuf.txt
 
 	else
 			# If you're not root
@@ -145,4 +148,4 @@ echo "=========================================================="
 			echo "Sorry, try again with root powers ;)"
 	fi
 
-# Fim do arquivo
+# End of file
