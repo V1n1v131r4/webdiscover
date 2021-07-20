@@ -36,8 +36,12 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 
 			# gospider
 			if which gospider 2>&1 > /dev/null; then echo "gospider found!"; else apt install gospider; fi
-			
 			echo " "
+
+			# nuclei
+			if which nuclei 2>&1 > /dev/null; then echo "nuclei found!"; else wget https://github.com/projectdiscovery/nuclei/releases/download/v2.4.0/nuclei_2.4.0_linux_amd64.zip && unzip nuclei_2.4.0_linux_amd64.zip && mv nuclei /usr/bin/nuclei && cd /opt && git clone https://github.com/projectdiscovery/nuclei-templates.git; fi
+			echo " "
+			
 			# searchsploit
 			searchsploit -u && echo "exploit-db updated!"
 			echo " "
@@ -141,6 +145,15 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 			echo " "
 			gospider -s "https://www.$target" -c 10 -d 1 | tee result/gospider.txt
 
+			echo " "
+			echo "## Nuclei ##"
+			echo " "
+			cd result
+			nuclei -ut
+			nuclei -u https://www.$target -t /opt/nuclei-templates/ -irr -me nuclei_reports
+			cd ..
+			
+			
 			echo " "	
 			echo "### FFUF ###"
 			echo " "
