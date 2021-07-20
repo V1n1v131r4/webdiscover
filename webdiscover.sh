@@ -29,6 +29,10 @@ echo "=========================================================="
 			if which whatweb 2>&1 > /dev/null; then echo "whatweb found!"; else apt install whatweb; fi
 			echo " "
 
+			# gospider
+			if which gospider 2>&1 > /dev/null; then echo "gospider found!"; else apt install gospider; fi
+			
+			echo " "
 			# searchsploit
 			searchsploit -u && echo "exploit-db updated!"
 			echo " "
@@ -39,13 +43,24 @@ echo "=========================================================="
 
 			echo "==> Set your target (Ex. google.com)" ; read target
 			echo " "
+			echo " "
+			echo "==> Set ports for your target" ; read ports
 
 			#########################################################################
 			############################## Starting Scan ############################
 			#########################################################################
-
+			echo " "
 			echo "Let's go!!!" 
 			echo " "
+			
+			# nmap
+			
+			echo "### NMAP ###"
+			echo " "
+
+			rm -rf /tmp/nmap.txt
+			nmap -sV -sC -O -p 80,443 $target -oX /tmp/nmap.txt
+
 
 			echo "### DNSRecon ###"
 			echo " "
@@ -65,15 +80,21 @@ echo "=========================================================="
 
 			echo " "
 			echo "### SearchSploit ##"
-			# Tks to @Gr1nch for this insight ;)
 			echo " "
+			
+			#echo " "
+			#echo "==> Searchsploit to NMAP"
+			#echo " "
+			#searchsploit --nmap /tmp/nmap.xml
+			#echo " "
+
 			echo " "
-			echo "==> Web Technology"
+			echo "==> Technology"
 
 			if cat /tmp/whatweb_temp.txt | grep -e "X\-Powered\-By\:";then TECH=`cat /tmp/whatweb_temp.txt | grep -e "X\-Powered\-By\:" | awk '{print $2}' | sed 's/-/ /g' | sed -E 's/\// /g' | sed 's/,//g' | awk '{print $1,$2}' | head -n1` && searchsploit -s $TECH;else echo "Can't understand technology...";fi
 			
 			echo " "
-			echo "==> Server"
+			echo "==> Web Server"
 			if ! cat /tmp/whatweb_temp.txt | grep -e "Server:" | awk '{print $2}' | sed 's/-/ /g' | sed -E 's/\// /g' | sed 's/,//g' | awk '{print $2}';then echo "Can't define server version...";else SRV=`cat /tmp/whatweb_temp.txt | grep -e "Server:" | awk '{print $2}' | sed 's/-/ /g' | sed -E 's/\// /g' | sed 's/,//g' | awk '{print $1,$2}' | head -n1` && searchsploit -s $SRV;fi
 			
 			echo " "
@@ -82,7 +103,7 @@ echo "=========================================================="
 			# WordPress
 			rm -rf /tmp/2.txt
 
-			echo "==> CMS - WordPress"
+			echo "==> CMS"
 
 			if cat /tmp/whatweb_temp.txt 2>&1 > /dev/null | awk '/WordPress/';then cat /tmp/whatweb_temp.txt | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' > /tmp/2.txt;else echo "";fi
 
@@ -93,7 +114,7 @@ echo "=========================================================="
 			# Joomla
 			rm -rf /tmp/3.txt
 
-			echo "==> CMS - Joomla"
+			echo "==> CMS"
 
 			if cat /tmp/whatweb_temp.txt 2>&1 > /dev/null | awk '/Joomla/';then cat /tmp/whatweb_temp.txt | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' > /tmp/3.txt;else echo "";fi
 
@@ -102,12 +123,15 @@ echo "=========================================================="
 			#VER2=`cat /tmp/2.txt | awk -F "Joomla" '/Joomla\[/{print $2}' | sed 's/\[/ /g' | sed 's/\]/ /g' | sed 's/\,/ /g' | tr -s ' ' | cut -d ' ' -f 3` && searchsploit -s joomla $VER2
 			
 			# WPScan
-			if whatweb --plugins=wordpress | grep "WordPress";then echo "Scanning Wordpress..." && echo " " && wpscan --url $target; else echo ""; fi
+			#if whatweb --plugins=wordpress | grep "WordPress";then echo "Scanning Wordpress..." && echo " " && wpscan --url $target; else echo ""; fi
 
 			# JoomScan
-			if whatweb --plugins=joomla | grep "Joomla";then echo "Scanning Joomla..." && echo " " && joomscan --url $target; else echo ""; fi
+			#if whatweb --plugins=joomla | grep "Joomla";then echo "Scanning Joomla..." && echo " " && joomscan --url $target; else echo ""; fi
 
 			echo " "
+			echo "## GoSpider ##"
+			echo " "
+			gospider -s "https://www.$target" -c 10 -d 1
 
 			echo " "	
 			echo "### FFUF ###"
@@ -121,4 +145,4 @@ echo "=========================================================="
 			echo "Sorry, try again with root powers ;)"
 	fi
 
-# End of file
+# Fim do arquivo
