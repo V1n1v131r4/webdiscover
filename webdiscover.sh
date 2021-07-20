@@ -4,6 +4,11 @@ echo "=========================================================="
 echo "============ Web Discovery - by v1n1v131r4@pm.me ========="
 echo "=========================================================="
 
+# Check if you are on Kali Linux
+
+if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
+	then
+
 # Check if you are root
 	if [ "$(whoami)" = "root" ]
 		then
@@ -146,6 +151,10 @@ echo "=========================================================="
 			# If you're not root
 			# you got error
 			echo "Sorry, try again with root powers ;)"
+	fi
+
+else
+	echo " Sorry, i can't run without Kali linux :/"
 	fi
 
 # End of file
