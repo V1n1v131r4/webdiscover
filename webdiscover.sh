@@ -21,15 +21,23 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 			# seclists
 			if ls -l /usr/share | grep "seclists" 2>&1 > /dev/null; then echo "seclists found!"; else apt install seclists; fi
 			echo " "
+			
 			# ffuf
 			if which ffuf 2>&1 > /dev/null; then echo "ffuf found!"; else apt install ffuf; fi
 			echo " " 
+			
 			# namelist
 			if ls -l /usr/share/ | grep "namelist.txt" 2>&1 > /dev/null; then echo "namelist found!"; else wget https://raw.githubusercontent.com/darkoperator/dnsrecon/master/namelist.txt -O /usr/share/namelist.txt; fi
 			echo " "
+			
 			# dnsrecon
 			if which dnsrecon 2>&1 > /dev/null; then echo "dnsrecon found!"; else apt install dnsrecon; fi
 			echo " "
+			
+			# subfinder
+			if which subfinder 2>&1 > /dev/null; then echo "subfinder found!"; else apt install subfinder; fi
+			echo " "
+			
 			# whatweb
 			if which whatweb 2>&1 > /dev/null; then echo "whatweb found!"; else apt install whatweb; fi
 			echo " "
@@ -81,6 +89,11 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 			dnsrecon -d $target -t zonewalk 2>/dev/null | tee result/dnsrecon_zonewal.txt
 
 			dnsrecon -d $target -D /usr/share/namelist.txt -r brt 2>/dev/null | tee result/dnsrecon_subdomain.txt
+
+
+			echo " "
+			echo "## Subfinder ##"
+			subfinder -d $target -v -o result/subfinder.txt
 
 			echo " "	
 			echo "### WhatWeb ###"
