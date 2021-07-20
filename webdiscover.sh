@@ -155,6 +155,6 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 
 else
 	echo " Sorry, i can't run without Kali linux :/"
-	fi
+fi
 
 # End of file
