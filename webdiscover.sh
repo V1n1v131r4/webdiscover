@@ -47,11 +47,11 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 			echo " "
 
 			# nuclei
-			if which nuclei 2>&1 > /dev/null; then echo "nuclei found!"; else wget https://github.com/projectdiscovery/nuclei/releases/download/v2.4.0/nuclei_2.4.0_linux_amd64.zip && unzip nuclei_2.4.0_linux_amd64.zip && mv nuclei /usr/bin/nuclei && cd /opt && git clone https://github.com/projectdiscovery/nuclei-templates.git; fi
+			if which nuclei 2>&1 > /dev/null; then echo "nuclei found!" && nuclei -ut 2>&1 > /dev/null; else wget https://github.com/projectdiscovery/nuclei/releases/download/v2.4.0/nuclei_2.4.0_linux_amd64.zip && unzip nuclei_2.4.0_linux_amd64.zip && mv nuclei /usr/bin/nuclei && cd /opt && git clone https://github.com/projectdiscovery/nuclei-templates.git; fi
 			echo " "
 			
 			# searchsploit
-			searchsploit -u && echo "exploit-db updated!"
+			#searchsploit -u && echo "exploit-db updated!"
 			echo " "
 			echo " "	
 			#########################################################################
@@ -61,10 +61,40 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 			echo "==> Set your target (Ex. google.com)" ; read target
 			echo " "
 
-			target() {
+			timestamp() {
   				date +"%T" # current time
 			}	
 			
+			MainScan() {
+				for i in $(cat result_$target/subfinder.txt);do
+					echo " "
+					echo " "
+					echo "###########################################################"
+					echo "=========> Start Scan on $i"
+					echo "###########################################################"
+					echo " "
+					echo " "
+
+					echo " "
+					echo "## GoSpider ##"
+					echo " "
+					gospider -s "https://$i" -c 10 -d 1 | tee result_$target/gospider_$i.txt &&
+
+					echo " "
+					echo "## Nuclei ##"
+					echo " "
+					cd result_$target
+					nuclei -u $i -t /opt/nuclei-templates/ -irr -me nuclei_reports &&
+					cd ..
+			
+			
+					echo " "	
+					echo "### FFUF ###"
+					echo " "
+					ffuf -c -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-big.txt -u http://$i/FUZZ -mc 200 | tee result_$target/ffuf_$i.txt
+
+				done
+			}
 
 			#########################################################################
 			############################## Starting Scan ############################
@@ -97,26 +127,22 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 
 			echo " "
 			echo "## Subfinder ##"
-			subfinder -d $target -v -o result_$target/subfinder.txt
-
+			subfinder -d $target -v -o result_$target/subfinder.txt && 
+			echo " "
 			echo " "	
+				
 			echo "### WhatWeb ###"
 			echo " "
 
 			rm -rf result_$target/whatweb.txt
-			whatweb --no-errors -a 3 -v $target | tee result_$target/whatweb.txt
-
+			whatweb --no-errors -a 3 -v $target | tee result_$target/whatweb.txt &&
+			
 			echo " "
 			echo "### SearchSploit ##"
 			echo " "
+			
 			# Tks to @Gr1nch for this insight
 			
-			#echo " "
-			#echo "==> Searchsploit to NMAP"
-			#echo " "
-			#searchsploit --nmap /tmp/nmap.xml
-			#echo " "
-
 			echo " "
 			echo "==> Web Technology"
 
@@ -127,6 +153,7 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 			if ! cat result_$target/whatweb.txt | grep -e "Server:" | awk '{print $2}' | sed 's/-/ /g' | sed -E 's/\// /g' | sed 's/,//g' | awk '{print $2}';then echo "Can't define server version...";else SRV=`cat result_$target/whatweb.txt | grep -e "Server:" | awk '{print $2}' | sed 's/-/ /g' | sed -E 's/\// /g' | sed 's/,//g' | awk '{print $1,$2}' | head -n1` && searchsploit -s $SRV | tee result_$target/webserver_sploit.txt;fi
 			
 			echo " "
+					
 			## CMS
 
 			# WordPress
@@ -138,7 +165,6 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 
 			VER1=`cat /tmp/2.txt | grep -E -o "WordPress\[.*" | grep -E -o "([0-9]\.[0-9]\.[0-9])"` && searchsploit -s wordpress $VER1 | tee result_$target/wordpress_sploit.txt
 			
-			#VER2=`cat /tmp/2.txt | awk -F "WordPress" '/WordPress\[/{print $2}' | sed 's/\[/ /g' | sed 's/\]/ /g' | sed 's/\,/ /g' | tr -s ' ' | cut -d ' ' -f 3` && searchsploit -s wordpress $VER2
 			
 			# Joomla
 			rm -rf /tmp/3.txt
@@ -149,33 +175,18 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 
 			VER1=`cat /tmp/3.txt | grep -E -o "Joomla\[.*" | grep -E -o "([0-9]\.[0-9]\.[0-9])"` && searchsploit -s joomla $VER1 | tee result_$target/joomla_sploit.txt
 			
-			#VER2=`cat /tmp/2.txt | awk -F "Joomla" '/Joomla\[/{print $2}' | sed 's/\[/ /g' | sed 's/\]/ /g' | sed 's/\,/ /g' | tr -s ' ' | cut -d ' ' -f 3` && searchsploit -s joomla $VER2
 			
 			# WPScan
 			#if whatweb --plugins=wordpress | grep "WordPress";then echo "Scanning Wordpress..." && echo " " && wpscan --url $target; else echo ""; fi
 
 			# JoomScan
 			#if whatweb --plugins=joomla | grep "Joomla";then echo "Scanning Joomla..." && echo " " && joomscan --url $target; else echo ""; fi
-
-			echo " "
-			echo "## GoSpider ##"
-			echo " "
-			gospider -s "https://www.$target" -c 10 -d 1 | tee result_$target/gospider.txt
-
-			echo " "
-			echo "## Nuclei ##"
-			echo " "
-			cd result_$target
-			nuclei -ut
-			nuclei -u https://www.$target -t /opt/nuclei-templates/ -irr -me nuclei_reports
-			cd ..
-			
-			
+				
 			echo " "	
-			echo "### FFUF ###"
-			echo " "
+				
+				
+			MainScan
 
-			ffuf -c -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-big.txt -u http://$target/FUZZ -mc 200 | tee result_$target/ffuf.txt
 
 	else
 			# If you're not root
