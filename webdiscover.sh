@@ -51,7 +51,7 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 			echo " "
 			
 			# searchsploit
-			#searchsploit -u && echo "exploit-db updated!"
+			searchsploit -u && echo "exploit-db updated!"
 			echo " "
 			echo " "	
 			#########################################################################
@@ -108,14 +108,14 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 			
 			# nmap
 			
-			echo "### NMAP ###"
+			echo "### Running NMAP agains the commom web ports on Target ###"
 			echo " "
 
 			rm -rf /tmp/nmap.txt
 			nmap -sV -sC -O -p 80,443 $target -oX result_$target/nmap.xml
 
 
-			echo "### DNSRecon ###"
+			echo "### Running DNSRecon agains the Target ###"
 			echo " "
 
 			dnsrecon -d $target -t axfr -s 2>/dev/null | tee result_$target/dnsrecon_axfr.txt
@@ -126,30 +126,30 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 
 
 			echo " "
-			echo "## Subfinder ##"
+			echo "## Running Subfinder agains the Target ##"
 			subfinder -d $target -v -o result_$target/subfinder.txt && 
 			echo " "
 			echo " "	
 				
-			echo "### WhatWeb ###"
+			echo "### Runnig WhatWeb agains the Mains Target ###"
 			echo " "
 
 			rm -rf result_$target/whatweb.txt
 			whatweb --no-errors -a 3 -v $target | tee result_$target/whatweb.txt &&
 			
 			echo " "
-			echo "### SearchSploit ##"
+			echo "### Running SearchSploit against the Main Target ##"
 			echo " "
 			
 			# Tks to @Gr1nch for this insight
 			
 			echo " "
-			echo "==> Web Technology"
+			echo "==> Enumerating -> Web Technology"
 
 			if cat result_$target/whatweb.txt | grep -e "X\-Powered\-By\:";then TECH=`cat result_$target/whatweb.txt | grep -e "X\-Powered\-By\:" | awk '{print $2}' | sed 's/-/ /g' | sed -E 's/\// /g' | sed 's/,//g' | awk '{print $1,$2}' | head -n1` && searchsploit -s $TECH | tee result_$target/webtech_sploit.txt;else echo "Can't understand technology...";fi
 			
 			echo " "
-			echo "==> Web Server"
+			echo "==> Enumerating -> Web Server"
 			if ! cat result_$target/whatweb.txt | grep -e "Server:" | awk '{print $2}' | sed 's/-/ /g' | sed -E 's/\// /g' | sed 's/,//g' | awk '{print $2}';then echo "Can't define server version...";else SRV=`cat result_$target/whatweb.txt | grep -e "Server:" | awk '{print $2}' | sed 's/-/ /g' | sed -E 's/\// /g' | sed 's/,//g' | awk '{print $1,$2}' | head -n1` && searchsploit -s $SRV | tee result_$target/webserver_sploit.txt;fi
 			
 			echo " "
@@ -159,9 +159,9 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 			# WordPress
 			rm -rf /tmp/2.txt
 
-			echo "==> CMS - WordPress"
+			echo "==> Enumerating -> WordPress"
 
-			if cat result_$target/whatweb.txt 2>&1 > /dev/null | awk '/WordPress/';then cat result_$target/whatweb.txt | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' > /tmp/2.txt;else echo "";fi
+			if cat result_$target/whatweb.txt 2>&1 > /dev/null | awk '/WordPress/';then cat result_$target/whatweb.txt | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' > /tmp/2.txt;else echo "The target appears not to have WordPress installed...";fi
 
 			VER1=`cat /tmp/2.txt | grep -E -o "WordPress\[.*" | grep -E -o "([0-9]\.[0-9]\.[0-9])"` && searchsploit -s wordpress $VER1 | tee result_$target/wordpress_sploit.txt
 			
@@ -169,9 +169,9 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 			# Joomla
 			rm -rf /tmp/3.txt
 
-			echo "==> CMS - Joomla"
+			echo "==> Enumerating -> Joomla"
 
-			if cat result_$target/whatweb.txt 2>&1 > /dev/null | awk '/Joomla/';then cat result_$target/whatweb.txt | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' > /tmp/3.txt;else echo "";fi
+			if cat result_$target/whatweb.txt 2>&1 > /dev/null | awk '/Joomla/';then cat result_$target/whatweb.txt | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' > /tmp/3.txt;else echo "The target appears not to have Joomla installed...";fi
 
 			VER1=`cat /tmp/3.txt | grep -E -o "Joomla\[.*" | grep -E -o "([0-9]\.[0-9]\.[0-9])"` && searchsploit -s joomla $VER1 | tee result_$target/joomla_sploit.txt
 			
