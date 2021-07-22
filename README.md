@@ -36,7 +36,7 @@ Build your docker container
 docker build -t webdiscover .
 ```
 
-After building the container using either way, run the following:
+After building the container, run the following:
 
 ```
 docker run --rm -it -v /path/to/local/directory:/webdiscoverData webdiscover
