@@ -24,13 +24,13 @@ It creates a directory with the scan outputs, as shown in the example below.
 Prerequisites
  * Docker service installed
 
-If you want to build the container yourself manually, git clone the repo, then build and run the following command:
+If you want to build the container yourself manually, git clone the repo:
 
 ```
 git clone git@github.com:V1n1v131r4/webdiscover.git
 ```
 
-Build your docker container
+Then build your docker container
 
 ```
 docker build -t webdiscover .
