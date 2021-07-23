@@ -1,4 +1,11 @@
-# WebDiscover
+
+__    __     _          ___ _
+/ / /\ \ \___| |__      /   (_)___  ___ _____   _____ _ __
+\ \/  \/ / _ \ '_ \    / /\ / / __|/ __/ _ \ \ / / _ \ '__|
+ \  /\  /  __/ |_) |  / /_//| \__ \ (_| (_) \ V /  __/ |
+  \/  \/ \___|_.__/  /___,' |_|___/\___\___/ \_/ \___|_|
+
+
 
 The purpose of this script is to automate the web enumeration process and search for exploits and vulns.
 
