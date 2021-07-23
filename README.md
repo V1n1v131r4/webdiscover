@@ -13,6 +13,7 @@ Added Tools (dependencies are installed during script execution):
 - gospider
 - nuclei
 - searchsploit
+- go-exploitdb
 
 It creates a directory with the scan outputs, as shown in the example below.
 
