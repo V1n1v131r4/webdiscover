@@ -1,8 +1,20 @@
 #!/bin/bash
 
+echo " "
+cat << "EOF"
+ __    __     _          ___ _
+/ / /\ \ \___| |__      /   (_)___  ___ _____   _____ _ __
+\ \/  \/ / _ \ '_ \    / /\ / / __|/ __/ _ \ \ / / _ \ '__|
+ \  /\  /  __/ |_) |  / /_//| \__ \ (_| (_) \ V /  __/ |
+  \/  \/ \___|_.__/  /___,' |_|___/\___\___/ \_/ \___|_|
+
+EOF
 echo "=========================================================="
-echo "============ Web Discovery - by v1n1v131r4@pm.me ========="
+echo "================== Vuln & Exploit Search ================="
+echo "=========== By @v1n1v131r4 and @fepame | DC5551 =========="
 echo "=========================================================="
+echo " "
+echo " "
 
 # Check if you are on Kali Linux
 
@@ -15,7 +27,7 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 			# If you are root,
 			# build dependences
 
-			echo "Building dependences" & sleep 2
+			echo "Building dependences..."
 			echo " "
 
 			# seclists
@@ -47,13 +59,22 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 			echo " "
 
 			# nuclei
-			if which nuclei 2>&1 > /dev/null; then echo "nuclei found!" && nuclei -ut 2>&1 > /dev/null; else wget https://github.com/projectdiscovery/nuclei/releases/download/v2.4.0/nuclei_2.4.0_linux_amd64.zip && unzip nuclei_2.4.0_linux_amd64.zip && mv nuclei /usr/bin/nuclei && cd /opt && git clone https://github.com/projectdiscovery/nuclei-templates.git; fi
+			if which nuclei 2>&1 > /dev/null; then echo "nuclei found!"; else wget https://github.com/projectdiscovery/nuclei/releases/download/v2.4.0/nuclei_2.4.0_linux_amd64.zip && unzip nuclei_2.4.0_linux_amd64.zip && mv nuclei /usr/bin/nuclei && cd /opt && git clone https://github.com/projectdiscovery/nuclei-templates.git; fi
+			nuclei -ut &>/dev/null &
+			echo " "
+
+			# searchsploit
+			searchsploit -u &>/dev/null & 
+			echo "exploit-db updated!"
 			echo " "
 			
-			# searchsploit
-			searchsploit -u && echo "exploit-db updated!"
+			# go-exploitdb
+			if which go-exploitdb 2>&1 > /dev/null; then echo "go-exploitdb found!"; else apt install go-exploitdb; fi
+			sudo go-exploitdb fetch exploitdb awsomepoc githubrepos &>/dev/null &
 			echo " "
 			echo " "	
+			sleep 5
+
 			#########################################################################
 			####################### Variables and Functions #########################
 			#########################################################################
@@ -84,14 +105,22 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 					echo "## Nuclei ##"
 					echo " "
 					cd result_$target
-					nuclei -u $i -t /opt/nuclei-templates/ -irr -me nuclei_reports &&
+					nuclei -u $i -t /opt/nuclei-templates/ -irr -me nuclei_reports && cd nuclei_reports	
+					echo " "
+					echo "go-exploitdb"
+					echo " "	
+					find | grep -e "CVE\-" | sed 's/.txt//g' | sed 's/.\///g' >> /tmp/cve.txt
+					for j in $(cat /tmp/cve.txt);do
+						sudo go-exploitdb search -stype CVE -sparam $j | tee ../go-exploitdb_$j.txt
+					done
+					cd ..
 					cd ..
 			
 			
 					echo " "	
 					echo "### FFUF ###"
 					echo " "
-					ffuf -c -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-big.txt -u http://$i/FUZZ -mc 200 | tee result_$target/ffuf_$i.txt
+					ffuf -c -w /usr/share/seclists/Discovery/Web-Content/directory-list-2.3-small.txt -u http://$i/FUZZ -mc 200 -recursion | tee result_$target/ffuf_$i.txt
 
 				done
 			}
