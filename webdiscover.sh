@@ -29,13 +29,14 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 
 			echo "Building dependences..."
 			echo " "
-
+                        
+			
 			# seclists
-			if ls -l /usr/share | grep "seclists" 2>&1 > /dev/null; then echo "seclists found!"; else apt install seclists; fi
+			if ls -l /usr/share | grep "seclists" 2>&1 > /dev/null; then echo "seclists found!"; else apt -y install seclists; fi
 			echo " "
 			
 			# ffuf
-			if which ffuf 2>&1 > /dev/null; then echo "ffuf found!"; else apt install ffuf; fi
+			if which ffuf 2>&1 > /dev/null; then echo "ffuf found!"; else apt -y install ffuf; fi
 			echo " " 
 			
 			# namelist
@@ -43,19 +44,19 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 			echo " "
 			
 			# dnsrecon
-			if which dnsrecon 2>&1 > /dev/null; then echo "dnsrecon found!"; else apt install dnsrecon; fi
+			if which dnsrecon 2>&1 > /dev/null; then echo "dnsrecon found!"; else apt -y install dnsrecon; fi
 			echo " "
 			
 			# subfinder
-			if which subfinder 2>&1 > /dev/null; then echo "subfinder found!"; else apt install subfinder; fi
+			if which subfinder 2>&1 > /dev/null; then echo "subfinder found!"; else apt -y install subfinder; fi
 			echo " "
 			
 			# whatweb
-			if which whatweb 2>&1 > /dev/null; then echo "whatweb found!"; else apt install whatweb; fi
+			if which whatweb 2>&1 > /dev/null; then echo "whatweb found!"; else apt -y install whatweb; fi
 			echo " "
 
 			# gospider
-			if which gospider 2>&1 > /dev/null; then echo "gospider found!"; else apt install gospider; fi
+			if which gospider 2>&1 > /dev/null; then echo "gospider found!"; else apt -y install gospider; fi
 			echo " "
 
 			# nuclei
@@ -69,7 +70,7 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 			echo " "
 			
 			# go-exploitdb
-			if which go-exploitdb 2>&1 > /dev/null; then echo "go-exploitdb found!"; else apt install go-exploitdb; fi
+			if which go-exploitdb 2>&1 > /dev/null; then echo "go-exploitdb found!"; else apt -y install go-exploitdb; fi
 			sudo go-exploitdb fetch exploitdb awsomepoc githubrepos &>/dev/null &
 			echo " "
 			echo " "	
