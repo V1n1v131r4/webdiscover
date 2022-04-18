@@ -24,7 +24,10 @@ RUN \
     whatweb \
     gospider \
     exploitdb
+    chromium
 
+
+RUN wget https://github.com/michenriksen/aquatone/releases/download/v1.7.0/aquatone_linux_amd64_1.7.0.zip && unzip aquatone_linux_amd64_1.7.0.zip && mv aquatone /usr/bin/
 
 RUN wget https://raw.githubusercontent.com/darkoperator/dnsrecon/master/namelist.txt -O /usr/share/namelist.txt
 
