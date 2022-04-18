@@ -24,7 +24,8 @@ Added Tools (dependencies are installed during script execution):
 
 It creates a directory with the scan outputs, as shown in the example below.
 
-![Captura de Tela 2021-07-21 às 12 16 45](https://user-images.githubusercontent.com/1153876/126514379-036f10ff-922b-4d1a-81b5-750d427f7e4a.png)
+
+![Capture](https://user-images.githubusercontent.com/1153876/163877184-47726be9-893b-4ce8-8a28-304d1df39a98.PNG)
 
 
 # Usage
