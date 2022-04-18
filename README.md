@@ -7,7 +7,7 @@ __    __     _          ___ _
 ```
 
 
-The purpose of this script is to automate the web enumeration process and search for exploits and vulns.
+The purpose of this script is to automate the web enumeration process and search for exploits and vulns for your target attack surface.
 
 Added Tools (dependencies are installed during script execution):
 
@@ -20,7 +20,7 @@ Added Tools (dependencies are installed during script execution):
 - gospider
 - nuclei
 - searchsploit
-- go-exploitdb
+- aquatone
 
 It creates a directory with the scan outputs, as shown in the example below.
 
