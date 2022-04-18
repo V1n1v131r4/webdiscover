@@ -15,6 +15,18 @@ echo "=========== By @v1n1v131r4 and @fepame | DC5551 =========="
 echo "=========================================================="
 echo " "
 echo " "
+echo "To run execute: ./webdiscover.sh [target]"
+echo " "
+echo "Your target must be like domain.com"
+echo " "
+echo " "
+
+# Check parameter exists
+
+if [ -z "$1" ]
+then
+	echo "Error: you must supply a target! Ex.: ./webdiscover.sh domain.com"
+else
 
 # Check if you are on Kali Linux
 
@@ -69,19 +81,21 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 			echo "exploit-db updated!"
 			echo " "
 			
-			# go-exploitdb
-			if which go-exploitdb 2>&1 > /dev/null; then echo "go-exploitdb found!"; else apt -y install go-exploitdb; fi
-			sudo go-exploitdb fetch exploitdb awsomepoc githubrepos &>/dev/null &
-			echo " "
+			# aquatone
+			if which aquatone 2>&1 > /dev/null; then echo "aquatone found!"; else sudo apt -y install chromium && wget https://github.com/michenriksen/aquatone/releases/download/v1.7.0/aquatone_linux_amd64_1.7.0.zip && unzip aquatone_linux_amd64_1.7.0.zip && sudo mv aquatone /usr/bin; fi
+			#echo " "
 			echo " "	
-			sleep 5
+			#sleep 2
 
 			#########################################################################
 			####################### Variables and Functions #########################
 			#########################################################################
 
-			echo "==> Set your target (Ex. google.com)" ; read target
-			echo " "
+			#echo "==> Set your 1 (Ex. google.com)"
+			#read 1
+			#echo " "
+			target=$1
+			#echo "Let's play with $target"
 
 			timestamp() {
   				date +"%T" # current time
@@ -102,20 +116,22 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 					echo " "
 					gospider -s "https://$i" -c 10 -d 1 | tee result_$target/gospider_$i.txt &&
 
+					
+						
+					echo " "
+					echo "## Aquatone ##"
+					echo " "
+					cd result_$target
+					mkdir aquatone_outputs && cd aquatone_outputs
+					cat ../subfinder.txt | aquatone
+					cd ../../
+						
 					echo " "
 					echo "## Nuclei ##"
 					echo " "
 					cd result_$target
-					nuclei -u $i -t /opt/nuclei-templates/ -irr -me nuclei_reports && cd nuclei_reports	
+					nuclei -l subfinder.txt -t /opt/nuclei-templates -irr -me nuclei_reports && cd nuclei_reports	
 					echo " "
-					echo "go-exploitdb"
-					echo " "	
-					find | grep -e "CVE\-" | sed 's/.txt//g' | sed 's/.\///g' >> /tmp/cve.txt
-					for j in $(cat /tmp/cve.txt);do
-						sudo go-exploitdb search -stype CVE -sparam $j | tee ../go-exploitdb_$j.txt
-					done
-					cd ..
-					cd ..
 			
 			
 					echo " "	
@@ -134,7 +150,7 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 			echo " "
 
 			# Create directory
-			mkdir result_$target
+			mkdir result_$1 2>&1 > /dev/null
 			
 			# nmap
 			
@@ -142,30 +158,30 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 			echo " "
 
 			rm -rf /tmp/nmap.txt
-			nmap -sV -sC -O -p 80,443 $target -oX result_$target/nmap.xml
+			nmap -sV -sC -O -p 80,443 $1 -oX result_$1/nmap.xml
 
 
 			echo "### Running DNSRecon agains the Target ###"
 			echo " "
 
-			dnsrecon -d $target -t axfr -s 2>/dev/null | tee result_$target/dnsrecon_axfr.txt
+			dnsrecon -d $1 -t axfr -s 2>/dev/null | tee result_$1/dnsrecon_axfr.txt
 
-			dnsrecon -d $target -t zonewalk 2>/dev/null | tee result_$target/dnsrecon_zonewal.txt
+			dnsrecon -d $1 -t zonewalk 2>/dev/null | tee result_$1/dnsrecon_zonewal.txt
 
-			dnsrecon -d $target -D /usr/share/namelist.txt -r brt 2>/dev/null | tee result_$target/dnsrecon_subdomain.txt
+			dnsrecon -d $1 -D /usr/share/namelist.txt -r brt 2>/dev/null | tee result_$1/dnsrecon_subdomain.txt
 
 
 			echo " "
 			echo "## Running Subfinder agains the Target ##"
-			subfinder -d $target -v -o result_$target/subfinder.txt && 
+			subfinder -d $1 -v -o result_$1/subfinder.txt && 
 			echo " "
 			echo " "	
 				
 			echo "### Runnig WhatWeb agains the Mains Target ###"
 			echo " "
 
-			rm -rf result_$target/whatweb.txt
-			whatweb --no-errors -a 3 -v $target | tee result_$target/whatweb.txt &&
+			rm -rf result_$1/whatweb.txt
+			whatweb --no-errors -a 3 -v $1 | tee result_$1/whatweb.txt &&
 			
 			echo " "
 			echo "### Running SearchSploit against the Main Target ##"
@@ -176,11 +192,11 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 			echo " "
 			echo "==> Enumerating -> Web Technology"
 
-			if cat result_$target/whatweb.txt | grep -e "X\-Powered\-By\:";then TECH=`cat result_$target/whatweb.txt | grep -e "X\-Powered\-By\:" | awk '{print $2}' | sed 's/-/ /g' | sed -E 's/\// /g' | sed 's/,//g' | awk '{print $1,$2}' | head -n1` && searchsploit -s $TECH | tee result_$target/webtech_sploit.txt;else echo "Can't understand technology...";fi
+			if cat result_$1/whatweb.txt | grep -e "X\-Powered\-By\:";then TECH=`cat result_$1/whatweb.txt | grep -e "X\-Powered\-By\:" | awk '{print $2}' | sed 's/-/ /g' | sed -E 's/\// /g' | sed 's/,//g' | awk '{print $1,$2}' | head -n1` && searchsploit -s $TECH | tee result_$1/webtech_sploit.txt;else echo "Can't understand technology...";fi
 			
 			echo " "
 			echo "==> Enumerating -> Web Server"
-			if ! cat result_$target/whatweb.txt | grep -e "Server:" | awk '{print $2}' | sed 's/-/ /g' | sed -E 's/\// /g' | sed 's/,//g' | awk '{print $2}';then echo "Can't define server version...";else SRV=`cat result_$target/whatweb.txt | grep -e "Server:" | awk '{print $2}' | sed 's/-/ /g' | sed -E 's/\// /g' | sed 's/,//g' | awk '{print $1,$2}' | head -n1` && searchsploit -s $SRV | tee result_$target/webserver_sploit.txt;fi
+			if ! cat result_$1/whatweb.txt | grep -e "Server:" | awk '{print $2}' | sed 's/-/ /g' | sed -E 's/\// /g' | sed 's/,//g' | awk '{print $2}';then echo "Can't define server version...";else SRV=`cat result_$1/whatweb.txt | grep -e "Server:" | awk '{print $2}' | sed 's/-/ /g' | sed -E 's/\// /g' | sed 's/,//g' | awk '{print $1,$2}' | head -n1` && searchsploit -s $SRV | tee result_$1/webserver_sploit.txt;fi
 			
 			echo " "
 					
@@ -191,9 +207,9 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 
 			echo "==> Enumerating -> WordPress"
 
-			if cat result_$target/whatweb.txt 2>&1 > /dev/null | awk '/WordPress/';then cat result_$target/whatweb.txt | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' > /tmp/2.txt;else echo "The target appears not to have WordPress installed...";fi
+			if cat result_$1/whatweb.txt 2>&1 > /dev/null | awk '/WordPress/';then cat result_$1/whatweb.txt | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' > /tmp/2.txt;else echo "The 1 appears not to have WordPress installed...";fi
 
-			VER1=`cat /tmp/2.txt | grep -E -o "WordPress\[.*" | grep -E -o "([0-9]\.[0-9]\.[0-9])"` && searchsploit -s wordpress $VER1 | tee result_$target/wordpress_sploit.txt
+			VER1=`cat /tmp/2.txt | grep -E -o "WordPress\[.*" | grep -E -o "([0-9]\.[0-9]\.[0-9])"` && searchsploit -s wordpress $VER1 | tee result_$1/wordpress_sploit.txt
 			
 			
 			# Joomla
@@ -201,16 +217,16 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 
 			echo "==> Enumerating -> Joomla"
 
-			if cat result_$target/whatweb.txt 2>&1 > /dev/null | awk '/Joomla/';then cat result_$target/whatweb.txt | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' > /tmp/3.txt;else echo "The target appears not to have Joomla installed...";fi
+			if cat result_$1/whatweb.txt 2>&1 > /dev/null | awk '/Joomla/';then cat result_$1/whatweb.txt | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g' > /tmp/3.txt;else echo "The 1 appears not to have Joomla installed...";fi
 
-			VER1=`cat /tmp/3.txt | grep -E -o "Joomla\[.*" | grep -E -o "([0-9]\.[0-9]\.[0-9])"` && searchsploit -s joomla $VER1 | tee result_$target/joomla_sploit.txt
+			VER1=`cat /tmp/3.txt | grep -E -o "Joomla\[.*" | grep -E -o "([0-9]\.[0-9]\.[0-9])"` && searchsploit -s joomla $VER1 | tee result_$1/joomla_sploit.txt
 			
 			
 			# WPScan
-			#if whatweb --plugins=wordpress | grep "WordPress";then echo "Scanning Wordpress..." && echo " " && wpscan --url $target; else echo ""; fi
+			#if whatweb --plugins=wordpress | grep "WordPress";then echo "Scanning Wordpress..." && echo " " && wpscan --url $1; else echo ""; fi
 
 			# JoomScan
-			#if whatweb --plugins=joomla | grep "Joomla";then echo "Scanning Joomla..." && echo " " && joomscan --url $target; else echo ""; fi
+			#if whatweb --plugins=joomla | grep "Joomla";then echo "Scanning Joomla..." && echo " " && joomscan --url $1; else echo ""; fi
 				
 			echo " "	
 				
@@ -227,5 +243,8 @@ if [ "$(cat /etc/debian_version)" = "kali-rolling" ]
 else
 	echo " Sorry, i can't run without Kali linux :/"
 fi
+
+fi
+
 
 # End of file
