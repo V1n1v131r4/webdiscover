@@ -23,7 +23,7 @@ RUN \
     subfinder \
     whatweb \
     gospider \
-    exploitdb
+    exploitdb \
     chromium
 
 
